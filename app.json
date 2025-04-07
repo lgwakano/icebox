@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "HelloWorld",
-    "slug": "expo-template-default",
+    "name": "IceBox",
+    "slug": "icebox-udtklklldw3idckizx9xv",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,13 +9,15 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lgwakano.iceboxudtklklldw3idckizx9xv"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.lgwakano.iceboxudtklklldw3idckizx9xv"
     },
     "web": {
       "bundler": "metro",
@@ -36,6 +38,18 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9bf6a9b2-241b-4c0b-a286-b57864c7ddd4"
+      }
+    },
+    "owner": "lgwakano",
+    "updates": {
+      "url": "https://u.expo.dev/9bf6a9b2-241b-4c0b-a286-b57864c7ddd4"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }
