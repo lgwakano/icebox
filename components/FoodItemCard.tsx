@@ -8,13 +8,19 @@ interface FoodItemCardProps {
   }
 
   const FoodItemCard: React.FC<FoodItemCardProps> = ({ item, onRemove }) => {
+    console.log('FoodItemCard item:', item); // Log the item object
+
     const daysLeft = differenceInDays(new Date(item.expiryDate), new Date());
 
   return (
     <View style={[styles.card, daysLeft <= 3 && styles.warning]}>
-      <Text style={styles.name}>{item.name} ({item.quantity})</Text>
-      <Text>Expires in {daysLeft} day{daysLeft !== 1 ? 's' : ''}</Text>
-      <Button title="Remove" onPress={onRemove}/> {/* Button to remove */}
+      <>
+        <Text style={styles.name}>
+        {item.name || 'Unknown Item'} ({item.quantity ?? 'N/A'})
+        </Text>
+        <Text>Expires in {daysLeft} day{daysLeft !== 1 ? 's' : ''}</Text>
+        <Button title="Remove" onPress={onRemove}/> {/* Button to remove */}
+      </>
     </View>
   );
 }
