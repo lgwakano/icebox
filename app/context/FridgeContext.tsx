@@ -6,6 +6,7 @@ interface FridgeContextType {
   items: FoodItem[];
   addItem: (item: FoodItem) => void;
   removeItem: (id: string) => void;
+  updateItem: (id: string, updates: Partial<FoodItem>) => void;
 }
 
 const FridgeContext = createContext<FridgeContextType | undefined>(undefined);
@@ -57,13 +58,24 @@ const FridgeProvider: React.FC<FridgeProviderProps> = ({ children }) => {
     }
   };
 
+  // Update an existing item
+  const updateItem = async (id: string, updates: Partial<FoodItem>) => {
+    try {
+      const updatedItems = items.map(item => item.id === id ? { ...item, ...updates } : item);
+      await saveItems(updatedItems);
+      setItems(updatedItems);
+    } catch (error) {
+      console.error('Error updating item in fridge:', error);
+    }
+  };
+
   // Load items when the provider is mounted (i.e., on initial render)
   useEffect(() => {
     loadFridgeItems();
   }, []); // Empty dependency array means it runs once after initial render
 
   return (
-    <FridgeContext.Provider value={{ items, addItem, removeItem }}>
+    <FridgeContext.Provider value={{ items, addItem, removeItem, updateItem }}>
       {children}
     </FridgeContext.Provider>
   );
