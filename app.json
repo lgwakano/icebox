@@ -38,18 +38,6 @@
     ],
     "experiments": {
       "typedRoutes": true
-    },
-    "extra": {
-      "eas": {
-        "projectId": "9bf6a9b2-241b-4c0b-a286-b57864c7ddd4"
-      }
-    },
-    "owner": "lgwakano",
-    "updates": {
-      "url": "https://u.expo.dev/9bf6a9b2-241b-4c0b-a286-b57864c7ddd4"
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
     }
   }
 }
