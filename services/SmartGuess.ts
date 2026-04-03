@@ -14,24 +14,31 @@ export async function guessItemProperties(query: string): Promise<SmartGuessResp
   let categoriesToTest = query.toLowerCase();
 
   try {
-    const url = `https://world.openfoodfacts.net/api/v2/search?categories_tags_en=${encodeURIComponent(query.toLowerCase())}&fields=product_name,categories_tags&sort_by=popularity_key&page_size=1`;
+    const url = `https://world.openfoodfacts.org/api/v2/search?categories_tags_en=${encodeURIComponent(query.toLowerCase())}&fields=product_name,categories_tags&sort_by=popularity_key&page_size=1`;
     console.log(`[SmartGuess] 🌐 Fetching from API...`);
     
     const res = await fetch(url, {
       headers: {
-        'User-Agent': 'IceBox/1.0 (Mobile App)'
+        'User-Agent': 'IceBox/1.0 (Mobile App)',
+        'Accept': 'application/json'
       }
     });
 
     if (res.ok) {
-      const data = await res.json();
-      if (data.products && data.products.length > 0) {
-        const product = data.products[0];
-        const tags = product.categories_tags || [];
-        console.log(`[SmartGuess] ✅ OpenFoodFacts match: "${product.product_name || 'Unnamed Product'}" (${tags.length} tags)`);
-        categoriesToTest += " " + tags.join(" ").toLowerCase();
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data.products && data.products.length > 0) {
+          const product = data.products[0];
+          const tags = product.categories_tags || [];
+          console.log(`[SmartGuess] ✅ OpenFoodFacts match: "${product.product_name || 'Unnamed Product'}" (${tags.length} tags)`);
+          categoriesToTest += " " + tags.join(" ").toLowerCase();
+        } else {
+          console.log(`[SmartGuess] ℹ️ API returned 0 products. Falling back to local heuristic.`);
+        }
       } else {
-        console.log(`[SmartGuess] ℹ️ API returned 0 products. Falling back to local heuristic.`);
+        const text = await res.text();
+        console.warn(`[SmartGuess] ⚠️ API returned non-JSON response: ${text.substring(0, 100)}...`);
       }
     } else {
       console.warn(`[SmartGuess] ⚠️ API returned HTTP ${res.status}. Falling back to local heuristic.`);
