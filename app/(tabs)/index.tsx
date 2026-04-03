@@ -160,6 +160,8 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
         ListHeaderComponent={renderHeader()}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         ListEmptyComponent={
           <View className="items-center justify-center py-20 bg-gray-50 rounded-3xl mt-4">
             <View className="bg-white p-6 rounded-full shadow-sm mb-4">

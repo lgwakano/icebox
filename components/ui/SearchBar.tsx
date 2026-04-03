@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput, ViewProps } from 'react-native';
+import { View, TextInput, ViewProps, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 interface SearchBarProps extends ViewProps {
@@ -19,6 +19,11 @@ export default function SearchBar({ value, onChangeText, placeholder = "Search i
         placeholderTextColor="#94a3b8"
         className="flex-1 text-base text-gray-900"
       />
+      {value.length > 0 && (
+        <Pressable onPress={() => onChangeText('')} className="p-1 active:opacity-50">
+          <Feather name="x-circle" size={18} color="#94a3b8" />
+        </Pressable>
+      )}
     </View>
   );
 }
