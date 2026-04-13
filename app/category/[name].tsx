@@ -29,16 +29,17 @@ export default function CategoryDetailScreen() {
   const meta = CATEGORY_META[name!] || { icon: 'package-variant', color: '#94a3b8' };
 
   return (
-    <View className="flex-1" style={{ backgroundColor: meta.color }}>
+    <View style={{ flex: 1, backgroundColor: meta.color }}>
       {/* Header with Icon Background */}
       <View className="h-[240px] relative overflow-hidden">
         {/* Giant Translucent Icon */}
-        <MaterialCommunityIcons 
-          name={meta.icon as any} 
-          size={260} 
-          color="#ffffff" 
-          style={{ position: 'absolute', right: -40, top: -20, opacity: 0.15 }} 
-        />
+        <View style={{ position: 'absolute', right: -40, top: -20, opacity: 0.2 }}>
+          <MaterialCommunityIcons 
+            name={meta.icon as any} 
+            size={260} 
+            color="#ffffff" 
+          />
+        </View>
         
         {/* Top Controls */}
         <View className="absolute top-16 left-6 flex-row items-center">
