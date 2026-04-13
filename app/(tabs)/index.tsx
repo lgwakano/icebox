@@ -51,78 +51,71 @@ export default function HomeScreen() {
   }, [items]);
 
   return (
-    <View className="flex-1 bg-white">
-      {/* Premium Apple-style Food Image Background (Positioned Absolute) */}
-      <View className="absolute top-0 bottom-0 left-0 right-0 overflow-hidden">
-        <Image
-          source={{ uri: 'file:///home/admin2/.gemini/antigravity/brain/3d9b5339-c545-42aa-b4c4-b552b356cf6e/apple_style_food_bg_1776054099177.png' }}
-          className="w-full h-full opacity-60"
-          resizeMode="cover"
-        />
-        {/* Soft Frosting */}
-        <View className="absolute top-0 bottom-0 left-0 right-0 bg-white/40" />
-      </View>
-      
-      {/* Subtle Glassmorphism Overlay */}
-      <BlurView intensity={40} tint="light" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
-
+    <View className="flex-1 bg-[#38bdf8]">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      {/* Header section */}
-      <View className="relative px-6 pt-16 pb-4">
+        {/* Header section (Hero) */}
+        <View className="relative px-6 pt-16 pb-16 overflow-hidden">
+          {/* Giant Translucent Icon */}
+          <MaterialCommunityIcons 
+            name="snowflake" 
+            size={280} 
+            color="#ffffff" 
+            style={{ position: 'absolute', right: -60, top: -20, opacity: 0.15 }} 
+          />
 
-        {/* Sidebar Trigger */}
-        <Pressable className="mb-10 w-10 h-10 items-center justify-center">
-          <Feather name="menu" size={28} color="#1e293b" />
-        </Pressable>
+          {/* Sidebar Trigger */}
+          <Pressable className="mb-10 w-10 h-10 items-center justify-center bg-white/20 rounded-full border border-white/30">
+            <Feather name="menu" size={24} color="#ffffff" />
+          </Pressable>
 
-        {/* Greeting Section */}
-        <View className="mt-4">
-          <Text className="text-4xl font-black text-slate-900 tracking-tight">Hello, Waka</Text>
-          <Text className="text-lg text-slate-500 font-medium mt-1">This is what's in your fridge.</Text>
-        </View>
+          {/* Greeting Section */}
+          <View className="mt-2">
+            <Text className="text-4xl font-black text-white tracking-tight">Hello, Waka</Text>
+            <Text className="text-lg text-white/90 font-medium mt-1">This is what's in your fridge.</Text>
+          </View>
 
-        {/* Info Meta / Status Report */}
-        <View className="mt-8 flex-row items-center justify-between">
-          <View>
-            <Text className="text-slate-400 text-sm font-semibold uppercase tracking-widest">Freshness Report</Text>
-            <View className="flex-row mt-2 space-x-4">
-              <View className="flex-row items-center bg-red-50 px-3 py-1.5 rounded-full border border-red-100">
-                <View className="w-2 h-2 rounded-full bg-red-500 mr-2" />
-                <Text className="text-red-700 font-bold">{freshnessCounts.expired}</Text>
-              </View>
-              <View className="flex-row items-center bg-orange-50 px-3 py-1.5 rounded-full border border-orange-100">
-                <View className="w-2 h-2 rounded-full bg-orange-500 mr-2" />
-                <Text className="text-orange-700 font-bold">{freshnessCounts.soon}</Text>
-              </View>
-              <View className="flex-row items-center bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
-                <View className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-                <Text className="text-green-700 font-bold">{freshnessCounts.fresh}</Text>
+          {/* Info Meta / Status Report */}
+          <View className="mt-10 flex-row items-center justify-between">
+            <View>
+              <Text className="text-white/70 text-sm font-semibold uppercase tracking-widest">Freshness</Text>
+              <View className="flex-row mt-3 space-x-3">
+                <View className="flex-row items-center bg-white/20 px-3 py-1.5 rounded-full border border-white/30">
+                  <View className="w-2 h-2 rounded-full bg-red-400 mr-2" />
+                  <Text className="text-white font-bold">{freshnessCounts.expired}</Text>
+                </View>
+                <View className="flex-row items-center bg-white/20 px-3 py-1.5 rounded-full border border-white/30">
+                  <View className="w-2 h-2 rounded-full bg-yellow-400 mr-2" />
+                  <Text className="text-white font-bold">{freshnessCounts.soon}</Text>
+                </View>
+                <View className="flex-row items-center bg-white/20 px-3 py-1.5 rounded-full border border-white/30">
+                  <View className="w-2 h-2 rounded-full bg-green-400 mr-2" />
+                  <Text className="text-white font-bold">{freshnessCounts.fresh}</Text>
+                </View>
               </View>
             </View>
-          </View>
-          <View className="items-end">
-            <Text className="text-slate-400 text-sm font-semibold uppercase tracking-widest">Temp</Text>
-            <Text className="text-2xl font-bold text-slate-800 mt-1">7°</Text>
+            <View className="items-end">
+              <Text className="text-white/70 text-sm font-semibold uppercase tracking-widest">Temp</Text>
+              <Text className="text-3xl font-bold text-white mt-1">7°</Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* Categories Grid */}
-      <View className="px-6 pb-20">
-        <View className="flex-row flex-wrap justify-between">
-          {CATEGORIES.map((cat) => (
-            <CategoryCard
-              key={cat.id}
-              name={cat.name}
-              itemCount={categoryCounts[cat.id] || 0}
-              icon={cat.icon}
-              color={cat.color}
-              onPress={() => router.push(`/category/${cat.id}`)}
-            />
-          ))}
+        {/* Categories Grid (White Overlapping Card) */}
+        <View className="flex-1 bg-white -mt-10 rounded-t-[40px] px-6 pt-10 pb-20 shadow-lg" style={{ minHeight: 600 }}>
+          <View className="flex-row flex-wrap justify-between">
+            {CATEGORIES.map((cat) => (
+              <CategoryCard
+                key={cat.id}
+                name={cat.name}
+                itemCount={categoryCounts[cat.id] || 0}
+                icon={cat.icon}
+                color={cat.color}
+                onPress={() => router.push(`/category/${cat.id}`)}
+              />
+            ))}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
     </View>
   );
 }
