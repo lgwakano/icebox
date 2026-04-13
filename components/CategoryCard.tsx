@@ -15,9 +15,16 @@ export default function CategoryCard({ name, itemCount, icon, color, onPress }: 
     <Pressable 
       onPress={onPress}
       style={({ pressed }) => [
-        { elevation: 0, transform: [{ scale: pressed ? 0.98 : 1 }] }
+        { 
+          elevation: pressed ? 2 : 12,
+          shadowColor: '#64748b',
+          shadowOffset: { width: 0, height: pressed ? 2 : 10 },
+          shadowOpacity: pressed ? 0.1 : 0.2,
+          shadowRadius: pressed ? 4 : 15,
+          transform: [{ scale: pressed ? 0.95 : 1 }] 
+        }
       ]}
-      className="bg-white/70 rounded-[32px] p-6 w-[47%] mb-4 items-center justify-center border border-white overflow-hidden shadow-sm shadow-blue-900/5"
+      className="bg-white/95 rounded-[32px] p-6 w-[47%] mb-6 items-center justify-center border border-slate-200/80"
     >
       {({ pressed }) => (
         <>
@@ -33,7 +40,7 @@ export default function CategoryCard({ name, itemCount, icon, color, onPress }: 
           <Text className="text-gray-400 text-sm mt-1">{itemCount} items</Text>
           
           {pressed && (
-            <View className="absolute inset-0 bg-black/5" />
+            <View className="absolute inset-0 bg-slate-900/5 rounded-[32px]" />
           )}
         </>
       )}
