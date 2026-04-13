@@ -56,14 +56,20 @@ export async function guessItemProperties(query: string): Promise<SmartGuessResp
   if (categoriesToTest.includes("dairy") || categoriesToTest.includes("milk") || categoriesToTest.includes("yogurt") || categoriesToTest.includes("cheese") || categoriesToTest.includes("butter")) {
     return { category: "Dairy", location: "Fridge", shelfLifeDays: 14 };
   }
-  if (categoriesToTest.includes("meat") || categoriesToTest.includes("beef") || categoriesToTest.includes("chicken") || categoriesToTest.includes("pork") || categoriesToTest.includes("poultry") || categoriesToTest.includes("fish")) {
-    return { category: "Proteins", location: "Fridge", shelfLifeDays: 5 };
+  if (categoriesToTest.includes("meat") || categoriesToTest.includes("beef") || categoriesToTest.includes("chicken") || categoriesToTest.includes("pork") || categoriesToTest.includes("poultry")) {
+    return { category: "Meat", location: "Fridge", shelfLifeDays: 5 };
+  }
+  if (categoriesToTest.includes("fish") || categoriesToTest.includes("salmon") || categoriesToTest.includes("tuna") || categoriesToTest.includes("seafood")) {
+    return { category: "Fish", location: "Fridge", shelfLifeDays: 4 };
   }
   if (categoriesToTest.includes("frozen") || categoriesToTest.includes("ice cream") || categoriesToTest.includes("pizza")) {
     return { category: "Frozen", location: "Freezer", shelfLifeDays: 180 };
   }
-  if (categoriesToTest.includes("vegetable") || categoriesToTest.includes("fruit") || categoriesToTest.includes("apple") || categoriesToTest.includes("orange") || categoriesToTest.includes("lettuce")) {
-    return { category: "Produce", location: "Fridge", shelfLifeDays: 7 };
+  if (categoriesToTest.includes("vegetable") || categoriesToTest.includes("lettuce") || categoriesToTest.includes("carrot") || categoriesToTest.includes("spinach")) {
+    return { category: "Vegetables", location: "Fridge", shelfLifeDays: 7 };
+  }
+  if (categoriesToTest.includes("fruit") || categoriesToTest.includes("apple") || categoriesToTest.includes("orange") || categoriesToTest.includes("banana")) {
+    return { category: "Fruits", location: "Fridge", shelfLifeDays: 7 };
   }
   if (categoriesToTest.includes("beverage") || categoriesToTest.includes("drinks") || categoriesToTest.includes("juice") || categoriesToTest.includes("soda") || categoriesToTest.includes("water")) {
     return { category: "Beverages", location: "Fridge", shelfLifeDays: 30 };

@@ -5,6 +5,7 @@ import { FoodItem } from '../constants/types';
 import { Card } from './ui/Card';
 import { useRouter } from 'expo-router';
 import { getFoodIcon } from '../utils/foodIcons';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 interface FoodItemCardProps {
   item: FoodItem;
@@ -37,9 +38,21 @@ export default function FoodItemCard({ item, onRemove, onUpdateQuantity }: FoodI
 
   const iconName = getFoodIcon(item.name, item.category || '');
 
+  const renderRightActions = () => {
+    return (
+      <Pressable
+        onPress={onRemove}
+        className="bg-red-500 justify-center items-center w-20 rounded-2xl ml-2"
+      >
+        <Feather name="trash-2" size={24} color="white" />
+      </Pressable>
+    );
+  };
+
   return (
-    <Card className={`mb-3 border-l-4 border-transparent bg-white shadow-sm rounded-2xl flex-row items-center p-4 overflow-hidden`}>
-      {/* Visual Indicator Layer */}
+    <Swipeable renderRightActions={renderRightActions} containerStyle={{ marginBottom: 12 }}>
+      <Card className={`border-l-4 border-transparent bg-white shadow-sm rounded-2xl flex-row items-center p-4 overflow-hidden`}>
+        {/* Visual Indicator Layer */}
       <View className={`absolute left-0 top-0 bottom-0 w-1 ${isExpired ? 'bg-red-500' : daysLeft <= 3 ? 'bg-yellow-500' : 'bg-green-500'}`} />
       
       {/* Food Icon */}
@@ -87,7 +100,8 @@ export default function FoodItemCard({ item, onRemove, onUpdateQuantity }: FoodI
       <Pressable onPress={() => router.push(`/item/${item.id}`)} className="ml-2 p-2 rounded-full active:bg-gray-100">
         <Feather name="chevron-right" size={20} color="#cbd5e1" />
       </Pressable>
-    </Card>
+      </Card>
+    </Swipeable>
   );
 }
 

@@ -1,195 +1,130 @@
-import React, { useState, useMemo } from 'react';
-import { useRouter } from 'expo-router';
-import { View, Text, FlatList, Pressable, ScrollView } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { differenceInDays, addDays } from 'date-fns';
-import FoodItemCard from '../../components/FoodItemCard';
+import { useRouter } from 'expo-router';
+import React, { useMemo } from 'react';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { BlurView } from 'expo-blur';
+import CategoryCard from '../../components/CategoryCard';
 import { useFridge } from '../context/FridgeContext';
-import SearchBar from '../../components/ui/SearchBar';
-import QuickAddCard from '../../components/ui/QuickAddCard';
-import FilterChip from '../../components/ui/FilterChip';
+import { differenceInDays, isPast } from 'date-fns';
 
-const QUICK_ADD_ITEMS = [
-  { name: 'Milk', category: 'Breakfast', duration: 7 },
-  { name: 'Bread', category: 'Carbs', duration: 5 },
-  { name: 'Eggs', category: 'Proteins', duration: 14 },
-  { name: 'Lettuce', category: 'Vegetables', duration: 4 },
-  { name: 'Yogurt', category: 'Breakfast', duration: 10 },
-  { name: 'Chicken', category: 'Proteins', duration: 3 },
-];
-
-const FILTERS = [
-  { id: 'all', label: 'All', icon: 'list' },
-  { id: 'fresh', label: 'Fresh', icon: 'check-circle' },
-  { id: 'soon', label: 'Soon', icon: 'alert-triangle' },
-  { id: 'expired', label: 'Expired', icon: 'x-circle' },
-  { id: 'fridge', label: 'Fridge', icon: 'thermometer', iconType: 'material' },
+const CATEGORIES = [
+  { id: 'All', name: 'All Items', icon: 'fridge-outline', color: '#64748b' },
+  { id: 'Fruits', name: 'Fruit', icon: 'fruit-grapes', color: '#f97316' },
+  { id: 'Vegetables', name: 'Vegetable', icon: 'carrot', color: '#22c55e' },
+  { id: 'Meat', name: 'Meat', icon: 'food-steak', color: '#ef4444' },
+  { id: 'Fish', name: 'Fish', icon: 'fish', color: '#0ea5e9' },
+  { id: 'Dairy', name: 'Dairy', icon: 'cheese', color: '#facc15' },
+  { id: 'Beverages', name: 'Drinks', icon: 'cup-water', color: '#38bdf8' },
+  { id: 'Snacks', name: 'Snacks', icon: 'peanut', color: '#d946ef' },
 ];
 
 export default function HomeScreen() {
-  const { items, removeItem, updateItem, addItem } = useFridge();
+  const { items } = useFridge();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
 
-  // Calculate metrics
-  const today = new Date();
-  const freshCount = items.filter(i => differenceInDays(new Date(i.expiryDate), today) > 3).length;
-  const soonCount = items.filter(i => {
-    const diff = differenceInDays(new Date(i.expiryDate), today);
-    return diff >= 0 && diff <= 3;
-  }).length;
-  const expiredCount = items.filter(i => differenceInDays(new Date(i.expiryDate), today) < 0).length;
+  const { categoryCounts, freshnessCounts } = useMemo(() => {
+    const catCounts: Record<string, number> = { All: items.length };
+    const freshCounts = { expired: 0, soon: 0, fresh: 0 };
+    
+    const now = new Date();
+    
+    items.forEach(item => {
+      // Category counts
+      const cat = item.category || 'Other';
+      catCounts[cat] = (catCounts[cat] || 0) + 1;
+      
+      // Freshness counts
+      const expiryDate = new Date(item.expiryDate);
+      const isExpired = isPast(expiryDate);
+      const daysLeft = differenceInDays(expiryDate, now);
+      
+      if (isExpired) {
+        freshCounts.expired++;
+      } else if (daysLeft <= 3) {
+        freshCounts.soon++;
+      } else {
+        freshCounts.fresh++;
+      }
+    });
+    
+    return { categoryCounts: catCounts, freshnessCounts: freshCounts };
+  }, [items]);
 
-  const filteredItems = useMemo(() => {
-    return items
-      .filter(item => {
-        // Search filter (Only search if >= 3 characters)
-        let matchesSearch = true;
-        const query = searchQuery.trim().toLowerCase();
-        
-        if (query.length >= 3) {
-          matchesSearch = Boolean(
-            item.name?.toLowerCase().includes(query) || 
-            item.category?.toLowerCase().includes(query)
-          );
-        }
-        
-        if (!matchesSearch) return false;
+  return (
+    <View className="flex-1 bg-white">
+      {/* Premium Apple-style Food Image Background (Positioned Absolute) */}
+      <View className="absolute top-0 bottom-0 left-0 right-0 overflow-hidden">
+        <Image
+          source={{ uri: 'file:///home/admin2/.gemini/antigravity/brain/3d9b5339-c545-42aa-b4c4-b552b356cf6e/apple_style_food_bg_1776054099177.png' }}
+          className="w-full h-full opacity-60"
+          resizeMode="cover"
+        />
+        {/* Soft Frosting */}
+        <View className="absolute top-0 bottom-0 left-0 right-0 bg-white/40" />
+      </View>
+      
+      {/* Subtle Glassmorphism Overlay */}
+      <BlurView intensity={40} tint="light" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
 
-        // Category/Status filter
-        if (activeFilter === 'all') return true;
-        if (activeFilter === 'fridge') return item.location === 'Fridge';
-        
-        const diff = differenceInDays(new Date(item.expiryDate), today);
-        if (activeFilter === 'fresh') return diff > 3;
-        if (activeFilter === 'soon') return diff >= 0 && diff <= 3;
-        if (activeFilter === 'expired') return diff < 0;
-        
-        return true;
-      })
-      .sort((a, b) => new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime());
-  }, [items, searchQuery, activeFilter]);
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      {/* Header section */}
+      <View className="relative px-6 pt-16 pb-4">
 
-  const handleQuickAdd = (item: typeof QUICK_ADD_ITEMS[0]) => {
-    const newItem = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: item.name,
-      quantity: 1,
-      unit: 'pcs',
-      expiryDate: addDays(new Date(), item.duration).toISOString(),
-      category: item.category,
-      location: 'Fridge' as const,
-      dateAdded: new Date().toISOString(),
-    };
-    addItem(newItem);
-  };
+        {/* Sidebar Trigger */}
+        <Pressable className="mb-10 w-10 h-10 items-center justify-center">
+          <Feather name="menu" size={28} color="#1e293b" />
+        </Pressable>
 
-  const renderHeader = () => (
-    <View className="mb-6">
-      {/* Search Bar */}
-      <SearchBar 
-        value={searchQuery} 
-        onChangeText={setSearchQuery} 
-        className="mb-8"
-      />
-
-      {/* Quick Add Section */}
-      <View className="mb-8">
-        <View className="flex-row items-center mb-4">
-          <Feather name="zap" size={18} color="#3b82f6" className="mr-2" />
-          <Text className="text-lg font-bold text-gray-800">Quick Add</Text>
+        {/* Greeting Section */}
+        <View className="mt-4">
+          <Text className="text-4xl font-black text-slate-900 tracking-tight">Hello, Waka</Text>
+          <Text className="text-lg text-slate-500 font-medium mt-1">This is what's in your fridge.</Text>
         </View>
+
+        {/* Info Meta / Status Report */}
+        <View className="mt-8 flex-row items-center justify-between">
+          <View>
+            <Text className="text-slate-400 text-sm font-semibold uppercase tracking-widest">Freshness Report</Text>
+            <View className="flex-row mt-2 space-x-4">
+              <View className="flex-row items-center bg-red-50 px-3 py-1.5 rounded-full border border-red-100">
+                <View className="w-2 h-2 rounded-full bg-red-500 mr-2" />
+                <Text className="text-red-700 font-bold">{freshnessCounts.expired}</Text>
+              </View>
+              <View className="flex-row items-center bg-orange-50 px-3 py-1.5 rounded-full border border-orange-100">
+                <View className="w-2 h-2 rounded-full bg-orange-500 mr-2" />
+                <Text className="text-orange-700 font-bold">{freshnessCounts.soon}</Text>
+              </View>
+              <View className="flex-row items-center bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+                <View className="w-2 h-2 rounded-full bg-green-500 mr-2" />
+                <Text className="text-green-700 font-bold">{freshnessCounts.fresh}</Text>
+              </View>
+            </View>
+          </View>
+          <View className="items-end">
+            <Text className="text-slate-400 text-sm font-semibold uppercase tracking-widest">Temp</Text>
+            <Text className="text-2xl font-bold text-slate-800 mt-1">7°</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Categories Grid */}
+      <View className="px-6 pb-20">
         <View className="flex-row flex-wrap justify-between">
-          {QUICK_ADD_ITEMS.map((item) => (
-            <QuickAddCard 
-              key={item.name} 
-              name={item.name} 
-              category={item.category} 
-              onPress={() => handleQuickAdd(item)} 
+          {CATEGORIES.map((cat) => (
+            <CategoryCard
+              key={cat.id}
+              name={cat.name}
+              itemCount={categoryCounts[cat.id] || 0}
+              icon={cat.icon}
+              color={cat.color}
+              onPress={() => router.push(`/category/${cat.id}`)}
             />
           ))}
         </View>
       </View>
-
-      {/* Filter Tabs */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2 -mx-4 px-4 h-12">
-        {FILTERS.map((filter) => (
-          <FilterChip
-            key={filter.id}
-            label={filter.label}
-            icon={filter.icon}
-            iconType={filter.iconType as any}
-            isActive={activeFilter === filter.id}
-            onPress={() => setActiveFilter(filter.id)}
-            count={filter.id === 'all' ? items.length : undefined}
-          />
-        ))}
-      </ScrollView>
-    </View>
-  );
-
-  return (
-    <View className="flex-1 bg-white">
-      {/* Persistent Header */}
-      <View className="pt-16 px-4 pb-4 bg-white flex-row justify-between items-start">
-        <View>
-          <View className="flex-row items-center bg-blue-50 px-2 py-1 rounded-lg self-start mb-1">
-             <MaterialCommunityIcons name="fridge-bottom" size={16} color="#3b82f6" />
-             <Text className="text-[10px] font-bold text-blue-600 ml-1 uppercase">Smart Inventory</Text>
-          </View>
-          <Text className="text-3xl font-black text-slate-900 tracking-tight">IceBox</Text>
-        </View>
-        <View className="flex-row gap-2 mt-2">
-           <View className="bg-green-100 w-8 h-8 rounded-full items-center justify-center">
-              <Text className="text-green-700 font-bold text-xs">{freshCount}</Text>
-           </View>
-           <View className="bg-yellow-100 w-8 h-8 rounded-full items-center justify-center">
-              <Text className="text-yellow-700 font-bold text-xs">{soonCount}</Text>
-           </View>
-           <View className="bg-red-100 w-8 h-8 rounded-full items-center justify-center">
-              <Text className="text-red-700 font-bold text-xs">{expiredCount}</Text>
-           </View>
-        </View>
-      </View>
-
-      {/* Inventory List */}
-      <FlatList
-        data={filteredItems}
-        keyExtractor={item => item.id}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
-        ListHeaderComponent={renderHeader()}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        ListEmptyComponent={
-          <View className="items-center justify-center py-20 bg-gray-50 rounded-3xl mt-4">
-            <View className="bg-white p-6 rounded-full shadow-sm mb-4">
-              <Feather name="package" size={48} color="#cbd5e1" />
-            </View>
-            <Text className="text-xl font-bold text-gray-800">Empty Inventory</Text>
-            <Text className="text-gray-500 mt-2 text-center px-10">
-              {searchQuery ? "No items found matching your search." : "Start by adding items to your fridge using Quick Add or the + button."}
-            </Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <FoodItemCard
-            item={item}
-            onRemove={() => removeItem(item.id)}
-            onUpdateQuantity={(quantity) => updateItem(item.id, { quantity })}
-          />
-        )}
-      />
-
-      {/* Floating Action Button */}
-      <Pressable 
-        onPress={() => router.push('/add')}
-        className="absolute bottom-8 right-6 w-16 h-16 bg-cyan-500 rounded-full items-center justify-center shadow-xl elevation-5 active:bg-cyan-600 active:opacity-80"
-      >
-        <Feather name="plus" size={32} color="white" />
-      </Pressable>
+    </ScrollView>
     </View>
   );
 }
+
 

@@ -11,6 +11,7 @@ import { useEffect } from "react";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import FridgeProvider from "./context/FridgeContext";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "../global.css";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -33,14 +34,17 @@ export default function RootLayout() {
   }
 
   return (
-    <FridgeProvider>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </FridgeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <FridgeProvider>
+        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="category/[name]" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </FridgeProvider>
+    </GestureHandlerRootView>
   );
 }
