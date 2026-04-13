@@ -4,6 +4,20 @@ export interface SmartGuessResponse {
   shelfLifeDays: number;
 }
 
+const CATEGORY_MAP: Record<string, { location: 'Fridge' | 'Freezer' | 'Pantry'; shelfLifeDays: number; keywords: string[] }> = {
+  Dairy: { location: "Fridge", shelfLifeDays: 14, keywords: ["dairy", "milk", "yogurt", "cheese", "butter", "cream", "kefir", "sour cream", "whey", "parmesan", "mozzarella"] },
+  Meat: { location: "Fridge", shelfLifeDays: 5, keywords: ["meat", "beef", "chicken", "pork", "poultry", "lamb", "duck", "turkey", "veal", "steak", "bacon", "sausage", "ham", "prosciutto", "salami"] },
+  Fish: { location: "Fridge", shelfLifeDays: 4, keywords: ["fish", "salmon", "tuna", "seafood", "shrimp", "prawns", "crab", "lobster", "cod", "trout", "halibut", "sushi"] },
+  Frozen: { location: "Freezer", shelfLifeDays: 180, keywords: ["frozen", "ice cream", "pizza", "gelato", "sorbet", "popsicle"] },
+  Vegetables: { location: "Fridge", shelfLifeDays: 7, keywords: ["vegetable", "lettuce", "carrot", "spinach", "broccoli", "onion", "tomato", "potato", "garlic", "cucumber", "pepper", "celery", "kale", "cabbage", "zucchini", "squash", "mushroom"] },
+  Fruits: { location: "Fridge", shelfLifeDays: 7, keywords: ["fruit", "apple", "orange", "banana", "grape", "berry", "strawberry", "blueberry", "melon", "watermelon", "peach", "pear", "plum", "kiwi", "mango", "pineapple", "lemon", "lime"] },
+  Beverages: { location: "Fridge", shelfLifeDays: 30, keywords: ["beverage", "drinks", "juice", "soda", "water", "coca cola", "pepsi", "tea", "coffee", "beer", "wine", "liquor", "sprite", "kombucha"] },
+  Condiments: { location: "Fridge", shelfLifeDays: 90, keywords: ["condiment", "sauce", "ketchup", "mustard", "mayo", "mayonnaise", "dressing", "soy sauce", "hot sauce", "vinegar", "syrup", "jam", "jelly", "honey", "relish", "dip", "salsa"] },
+  Snacks: { location: "Pantry", shelfLifeDays: 180, keywords: ["snack", "biscuit", "cookie", "chips", "crisps", "cracker", "popcorn", "pretzel", "nuts", "almonds", "peanuts", "candy", "chocolate"] },
+  Breakfast: { location: "Pantry", shelfLifeDays: 14, keywords: ["breakfast", "cereal", "bread", "oats", "pancake", "waffle", "granola", "bagel", "croissant"] },
+  Carbs: { location: "Pantry", shelfLifeDays: 365, keywords: ["pasta", "rice", "grain", "noodle", "spaghetti", "macaroni", "quinoa", "couscous", "flour"] }
+};
+
 export async function guessItemProperties(query: string): Promise<SmartGuessResponse | null> {
   if (!query) return null;
 
@@ -51,40 +65,11 @@ export async function guessItemProperties(query: string): Promise<SmartGuessResp
 
   console.log(`[SmartGuess] 🧩 Executing heuristic engine with string: "${categoriesToTest}"`);
 
-  // Basic heuristic engine mapping categories AND query strings to Fridge/Freezer/Pantry
-  // This allows the app to work seamlessly even if the API throws a 503
-  if (categoriesToTest.includes("dairy") || categoriesToTest.includes("milk") || categoriesToTest.includes("yogurt") || categoriesToTest.includes("cheese") || categoriesToTest.includes("butter")) {
-    return { category: "Dairy", location: "Fridge", shelfLifeDays: 14 };
-  }
-  if (categoriesToTest.includes("meat") || categoriesToTest.includes("beef") || categoriesToTest.includes("chicken") || categoriesToTest.includes("pork") || categoriesToTest.includes("poultry")) {
-    return { category: "Meat", location: "Fridge", shelfLifeDays: 5 };
-  }
-  if (categoriesToTest.includes("fish") || categoriesToTest.includes("salmon") || categoriesToTest.includes("tuna") || categoriesToTest.includes("seafood")) {
-    return { category: "Fish", location: "Fridge", shelfLifeDays: 4 };
-  }
-  if (categoriesToTest.includes("frozen") || categoriesToTest.includes("ice cream") || categoriesToTest.includes("pizza")) {
-    return { category: "Frozen", location: "Freezer", shelfLifeDays: 180 };
-  }
-  if (categoriesToTest.includes("vegetable") || categoriesToTest.includes("lettuce") || categoriesToTest.includes("carrot") || categoriesToTest.includes("spinach")) {
-    return { category: "Vegetables", location: "Fridge", shelfLifeDays: 7 };
-  }
-  if (categoriesToTest.includes("fruit") || categoriesToTest.includes("apple") || categoriesToTest.includes("orange") || categoriesToTest.includes("banana")) {
-    return { category: "Fruits", location: "Fridge", shelfLifeDays: 7 };
-  }
-  if (categoriesToTest.includes("beverage") || categoriesToTest.includes("drinks") || categoriesToTest.includes("juice") || categoriesToTest.includes("soda") || categoriesToTest.includes("water")) {
-    return { category: "Beverages", location: "Fridge", shelfLifeDays: 30 };
-  }
-  if (categoriesToTest.includes("condiment") || categoriesToTest.includes("sauce") || categoriesToTest.includes("ketchup") || categoriesToTest.includes("mustard") || categoriesToTest.includes("mayo")) {
-    return { category: "Condiments", location: "Fridge", shelfLifeDays: 90 };
-  }
-  if (categoriesToTest.includes("snack") || categoriesToTest.includes("biscuit") || categoriesToTest.includes("cookie") || categoriesToTest.includes("chips") || categoriesToTest.includes("crisps")) {
-    return { category: "Snacks", location: "Pantry", shelfLifeDays: 180 };
-  }
-  if (categoriesToTest.includes("breakfast") || categoriesToTest.includes("cereal") || categoriesToTest.includes("bread") || categoriesToTest.includes("oats")) {
-    return { category: "Breakfast", location: "Pantry", shelfLifeDays: 14 };
-  }
-  if (categoriesToTest.includes("pasta") || categoriesToTest.includes("rice") || categoriesToTest.includes("grain") || categoriesToTest.includes("noodle")) {
-    return { category: "Carbs", location: "Pantry", shelfLifeDays: 365 };
+  // Iterate through our category map to find matching tags
+  for (const [category, config] of Object.entries(CATEGORY_MAP)) {
+    if (config.keywords.some(keyword => categoriesToTest.includes(keyword))) {
+      return { category, location: config.location, shelfLifeDays: config.shelfLifeDays };
+    }
   }
   
   // Default fallback if a product is found but we can't map its tags well

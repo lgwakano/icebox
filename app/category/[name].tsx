@@ -1,16 +1,19 @@
 import React, { useMemo } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, ScrollView, Image, Pressable, FlatList } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFridge } from '../context/FridgeContext';
 import DetailedItemCard from '../../components/DetailedItemCard';
 
-const CATEGORY_ASSETS: Record<string, string> = {
-  All: 'file:///home/admin2/.gemini/antigravity/brain/a0efdded-3113-4e7c-b618-1b31085a8701/fruit_illustration_1776049909294.png',
-  Fruits: 'file:///home/admin2/.gemini/antigravity/brain/a0efdded-3113-4e7c-b618-1b31085a8701/fruit_illustration_1776049909294.png',
-  Vegetables: 'file:///home/admin2/.gemini/antigravity/brain/a0efdded-3113-4e7c-b618-1b31085a8701/vegetable_illustration_1776050204690.png',
-  Meat: 'file:///home/admin2/.gemini/antigravity/brain/a0efdded-3113-4e7c-b618-1b31085a8701/meat_illustration_1776050223700.png',
-  Fish: 'file:///home/admin2/.gemini/antigravity/brain/a0efdded-3113-4e7c-b618-1b31085a8701/fish_illustration_1776050246232.png',
+const CATEGORY_META: Record<string, { icon: string; color: string }> = {
+  All: { icon: 'fridge-outline', color: '#64748b' },
+  Fruits: { icon: 'fruit-grapes', color: '#f97316' },
+  Vegetables: { icon: 'carrot', color: '#22c55e' },
+  Meat: { icon: 'food-steak', color: '#ef4444' },
+  Fish: { icon: 'fish', color: '#0ea5e9' },
+  Dairy: { icon: 'cheese', color: '#facc15' },
+  Beverages: { icon: 'cup-water', color: '#38bdf8' },
+  Snacks: { icon: 'peanut', color: '#d946ef' },
 };
 
 export default function CategoryDetailScreen() {
@@ -23,33 +26,35 @@ export default function CategoryDetailScreen() {
     return items.filter(item => item.category === name);
   }, [items, name]);
 
-  const headerImage = CATEGORY_ASSETS[name!] || CATEGORY_ASSETS['Fruits'];
+  const meta = CATEGORY_META[name!] || { icon: 'package-variant', color: '#94a3b8' };
 
   return (
-    <View className="flex-1 bg-white">
-      {/* Header with Illustration */}
-      <View className="h-[240px] relative">
-        <Image 
-          source={{ uri: headerImage }} 
-          className="w-full h-full"
-          resizeMode="cover"
+    <View className="flex-1" style={{ backgroundColor: meta.color }}>
+      {/* Header with Icon Background */}
+      <View className="h-[240px] relative overflow-hidden">
+        {/* Giant Translucent Icon */}
+        <MaterialCommunityIcons 
+          name={meta.icon as any} 
+          size={260} 
+          color="#ffffff" 
+          style={{ position: 'absolute', right: -40, top: -20, opacity: 0.15 }} 
         />
         
         {/* Top Controls */}
         <View className="absolute top-16 left-6 flex-row items-center">
           <Pressable 
             onPress={() => router.back()}
-            className="flex-row items-center bg-white/80 px-4 py-2 rounded-full border border-white"
+            className="flex-row items-center bg-white/20 px-4 py-2 rounded-full border border-white/30"
           >
-            <Feather name="chevron-left" size={20} color="#1e293b" />
-            <Text className="ml-1 font-bold text-slate-800">Back</Text>
+            <Feather name="chevron-left" size={20} color="#ffffff" />
+            <Text className="ml-1 font-bold text-white">Back</Text>
           </Pressable>
         </View>
 
         {/* Category Branding */}
         <View className="absolute bottom-10 left-6">
-           <Text className="text-5xl font-black text-slate-900 tracking-tighter">{name === 'All' ? 'All Items' : name}</Text>
-           <Text className="text-xl text-slate-500 font-bold mt-1">{filteredItems.length} items</Text>
+           <Text className="text-5xl font-black text-white tracking-tighter">{name === 'All' ? 'All Items' : name}</Text>
+           <Text className="text-xl text-white/80 font-bold mt-1">{filteredItems.length} items</Text>
         </View>
       </View>
 
