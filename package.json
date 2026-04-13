@@ -5,6 +5,7 @@
   "version": "52.0.75",
   "scripts": {
     "start": "expo start -c",
+    "seed": "node ./scripts/seedMockData.js",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",

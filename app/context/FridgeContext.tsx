@@ -1,17 +1,7 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { FoodItem } from '../../constants/types';
 import { loadItems, saveItems } from '../../services/storage';
-import { addDays } from 'date-fns';
-
-const MOCK_DATA: FoodItem[] = [
-  { id: 'mock-1', name: 'Waitrose Pineapple', quantity: 1, expiryDate: addDays(new Date(), 5).toISOString(), dateAdded: new Date().toISOString(), category: 'Fruits', location: 'Fridge' },
-  { id: 'mock-2', name: 'Ribeye Steak', quantity: 2, expiryDate: addDays(new Date(), 2).toISOString(), dateAdded: new Date().toISOString(), category: 'Meat', location: 'Fridge' },
-  { id: 'mock-3', name: 'Organic Carrots', quantity: 1, expiryDate: addDays(new Date(), 9).toISOString(), dateAdded: new Date().toISOString(), category: 'Vegetables', location: 'Fridge' },
-  { id: 'mock-4', name: 'Atlantic Salmon', quantity: 2, expiryDate: addDays(new Date(), -1).toISOString(), dateAdded: new Date().toISOString(), category: 'Fish', location: 'Fridge' },
-  { id: 'mock-5', name: 'Cheddar Cheese', quantity: 1, expiryDate: addDays(new Date(), 14).toISOString(), dateAdded: new Date().toISOString(), category: 'Dairy', location: 'Fridge' },
-  { id: 'mock-6', name: 'Coca Cola', quantity: 6, expiryDate: addDays(new Date(), 30).toISOString(), dateAdded: new Date().toISOString(), category: 'Beverages', location: 'Fridge' },
-  { id: 'mock-7', name: 'Potato Chips', quantity: 1, expiryDate: addDays(new Date(), 60).toISOString(), dateAdded: new Date().toISOString(), category: 'Snacks', location: 'Pantry' },
-];
+import MOCK_DATA from '../../constants/mockData.json';
 
 interface FridgeContextType {
   items: FoodItem[];
