@@ -28,7 +28,7 @@ export default function CategoryDetailScreen() {
   return (
     <View className="flex-1 bg-white">
       {/* Header with Illustration */}
-      <View className="h-[350px] relative">
+      <View className="h-[240px] relative">
         <Image 
           source={{ uri: headerImage }} 
           className="w-full h-full"
