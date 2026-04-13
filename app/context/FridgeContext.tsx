@@ -1,6 +1,17 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { FoodItem } from '../../constants/types';
 import { loadItems, saveItems } from '../../services/storage';
+import { addDays } from 'date-fns';
+
+const MOCK_DATA: FoodItem[] = [
+  { id: 'mock-1', name: 'Waitrose Pineapple', quantity: 1, expiryDate: addDays(new Date(), 5).toISOString(), dateAdded: new Date().toISOString(), category: 'Fruits', location: 'Fridge' },
+  { id: 'mock-2', name: 'Ribeye Steak', quantity: 2, expiryDate: addDays(new Date(), 2).toISOString(), dateAdded: new Date().toISOString(), category: 'Meat', location: 'Fridge' },
+  { id: 'mock-3', name: 'Organic Carrots', quantity: 1, expiryDate: addDays(new Date(), 9).toISOString(), dateAdded: new Date().toISOString(), category: 'Vegetables', location: 'Fridge' },
+  { id: 'mock-4', name: 'Atlantic Salmon', quantity: 2, expiryDate: addDays(new Date(), -1).toISOString(), dateAdded: new Date().toISOString(), category: 'Fish', location: 'Fridge' },
+  { id: 'mock-5', name: 'Cheddar Cheese', quantity: 1, expiryDate: addDays(new Date(), 14).toISOString(), dateAdded: new Date().toISOString(), category: 'Dairy', location: 'Fridge' },
+  { id: 'mock-6', name: 'Coca Cola', quantity: 6, expiryDate: addDays(new Date(), 30).toISOString(), dateAdded: new Date().toISOString(), category: 'Beverages', location: 'Fridge' },
+  { id: 'mock-7', name: 'Potato Chips', quantity: 1, expiryDate: addDays(new Date(), 60).toISOString(), dateAdded: new Date().toISOString(), category: 'Snacks', location: 'Pantry' },
+];
 
 interface FridgeContextType {
   items: FoodItem[];
@@ -30,7 +41,17 @@ const FridgeProvider: React.FC<FridgeProviderProps> = ({ children }) => {
   const loadFridgeItems = async () => {
     try {
       const loadedItems = await loadItems();
-      setItems(loadedItems);
+      
+      // Inject our master mock data if it's not already there
+      const existingIds = new Set(loadedItems.map(i => i.id));
+      const freshMocks = MOCK_DATA.filter(i => !existingIds.has(i.id));
+      
+      const finalItems = [...freshMocks, ...loadedItems];
+      setItems(finalItems);
+      
+      if (freshMocks.length > 0) {
+        await saveItems(finalItems);
+      }
     } catch (error) {
       console.error('Error loading fridge items:', error);
     }
