@@ -21,7 +21,7 @@ const CATEGORY_MAP: Record<string, { location: 'Fridge' | 'Freezer' | 'Pantry'; 
 export async function guessItemProperties(query: string): Promise<SmartGuessResponse | null> {
   if (!query) return null;
 
-  console.log(`\\n[SmartGuess] 🔍 Analyzing: "${query}"`);
+  console.log(`\n[SmartGuess] 🔍 Analyzing: "${query}"`);
   const timeLabel = `[SmartGuess] ⏱️ API Time (${query})`;
   console.time(timeLabel);
 
@@ -29,16 +29,30 @@ export async function guessItemProperties(query: string): Promise<SmartGuessResp
 
   try {
     const url = `https://world.openfoodfacts.org/api/v2/search?categories_tags_en=${encodeURIComponent(query.toLowerCase())}&fields=product_name,categories_tags&sort_by=popularity_key&page_size=1`;
-    console.log(`[SmartGuess] 🌐 Fetching from API...`);
-    
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'IceBox/1.0 (Mobile App)',
-        'Accept': 'application/json'
-      }
-    });
+    const headers = {
+      'User-Agent': 'FridgeManagerApp/1.0 (lgwakano@gmail.com)',
+      'Accept': 'application/json'
+    };
 
-    if (res.ok) {
+    console.log(`[SmartGuess] 🌐 Fetching from API...`);
+    console.log(`[SmartGuess] 📋 Request Details:\n   GET ${url}\n   Headers: ${JSON.stringify(headers)}`);
+
+    const delays = [300, 800];
+    let res: Response | null = null;
+
+    for (let attempt = 0; attempt <= 2; attempt++) {
+      res = await fetch(url, { headers });
+
+      if (res.status === 503 && attempt < 2) {
+        const reqId = res.headers.get('x-request-id') || 'unknown';
+        console.warn(`[SmartGuess] ⚠️ API returned 503 (ReqID: ${reqId}). Retrying in ${delays[attempt]}ms (Attempt ${attempt + 1}/2)...`);
+        await new Promise(resolve => setTimeout(resolve, delays[attempt]));
+        continue;
+      }
+      break;
+    }
+
+    if (res && res.ok) {
       const contentType = res.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         const data = await res.json();
@@ -52,10 +66,12 @@ export async function guessItemProperties(query: string): Promise<SmartGuessResp
         }
       } else {
         const text = await res.text();
-        console.warn(`[SmartGuess] ⚠️ API returned non-JSON response: ${text.substring(0, 100)}...`);
+        console.warn(`[SmartGuess] ⚠️ API returned non-JSON response: ${text.substring(0, 200)}...`);
       }
-    } else {
-      console.warn(`[SmartGuess] ⚠️ API returned HTTP ${res.status}. Falling back to local heuristic.`);
+    } else if (res) {
+      const reqId = res.headers.get('x-request-id') || 'unknown';
+      const text = await res.text().catch(() => 'Could not read body');
+      console.warn(`[SmartGuess] ⚠️ API returned HTTP ${res.status} (ReqID: ${reqId}). Body preview: ${text.replace(/\\n/g, ' ').substring(0, 150)}... Falling back to heuristic.`);
     }
   } catch (error) {
     console.error("[SmartGuess] ❌ Network Error:", error);
@@ -65,13 +81,28 @@ export async function guessItemProperties(query: string): Promise<SmartGuessResp
 
   console.log(`[SmartGuess] 🧩 Executing heuristic engine with string: "${categoriesToTest}"`);
 
-  // Iterate through our category map to find matching tags
+  let bestCategory = { category: "General", location: "Pantry" as const, shelfLifeDays: 90 };
+  let maxScore = 0;
+
   for (const [category, config] of Object.entries(CATEGORY_MAP)) {
-    if (config.keywords.some(keyword => categoriesToTest.includes(keyword))) {
-      return { category, location: config.location, shelfLifeDays: config.shelfLifeDays };
+    let score = 0;
+    for (const keyword of config.keywords) {
+      // Split by keyword to count occurrences (e.g. 2 pieces means 1 match)
+      const matches = categoriesToTest.split(keyword).length - 1;
+      score += matches;
+    }
+    
+    if (score > maxScore) {
+      maxScore = score;
+      bestCategory = { category, location: config.location, shelfLifeDays: config.shelfLifeDays };
     }
   }
-  
-  // Default fallback if a product is found but we can't map its tags well
-  return { category: "General", location: "Pantry", shelfLifeDays: 90 };
+
+  if (maxScore > 0) {
+    console.log(`[SmartGuess] 🏆 Best match: ${bestCategory.category} (Score: ${maxScore})`);
+  } else {
+    console.log(`[SmartGuess] 🤷 No matches found. Defaulting to General.`);
+  }
+
+  return bestCategory;
 }
