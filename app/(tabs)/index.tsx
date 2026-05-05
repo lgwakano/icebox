@@ -1,11 +1,12 @@
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import CategoryCard from '../../components/CategoryCard';
 import { useFridge } from '../context/FridgeContext';
 import { differenceInDays, isPast } from 'date-fns';
+import SmartAssistantModal from '../../components/SmartAssistantModal';
 
 const CATEGORIES = [
   { id: 'All', name: 'All Items', icon: 'fridge-outline', color: '#64748b' },
@@ -21,6 +22,7 @@ const CATEGORIES = [
 export default function HomeScreen() {
   const { items } = useFridge();
   const router = useRouter();
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
   const { categoryCounts, freshnessCounts } = useMemo(() => {
     const catCounts: Record<string, number> = { All: items.length };
@@ -116,6 +118,20 @@ export default function HomeScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Floating Action Button for Smart Assistant */}
+      <Pressable 
+        onPress={() => setIsAssistantOpen(true)}
+        className="absolute bottom-6 right-6 w-16 h-16 bg-slate-800 rounded-full items-center justify-center shadow-2xl"
+        style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8 }}
+      >
+        <MaterialCommunityIcons name="robot-outline" size={30} color="white" />
+      </Pressable>
+
+      <SmartAssistantModal 
+        visible={isAssistantOpen} 
+        onClose={() => setIsAssistantOpen(false)} 
+      />
     </View>
   );
 }

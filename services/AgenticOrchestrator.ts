@@ -1,18 +1,25 @@
 import { AgentLogger } from './AgentLogger';
 import { agentSkills } from './agentSkills';
 import { guessItemProperties } from './SmartGuess';
+import uuid from 'react-native-uuid';
+import { addDays } from 'date-fns';
+import { FoodItem } from '../constants/types';
 
 export interface AgentResponse {
   message: string;
   success: boolean;
 }
 
+export interface ActionContext {
+  addItem?: (item: FoodItem) => void;
+}
+
 export class AgenticOrchestrator {
   private static getApiKey(): string {
-    // We expect the user to provide an EXPO_PUBLIC_GROQ_API_KEY
-    const key = process.env.EXPO_PUBLIC_GROQ_API_KEY;
+    // We expect the user to provide an EXPO_PUBLIC_LLM_API_KEY
+    const key = process.env.EXPO_PUBLIC_LLM_API_KEY;
     if (!key) {
-      throw new Error("Missing EXPO_PUBLIC_GROQ_API_KEY environment variable. Please add it to your .env file.");
+      throw new Error("Missing EXPO_PUBLIC_LLM_API_KEY environment variable. Please add it to your .env file.");
     }
     return key;
   }
@@ -20,9 +27,10 @@ export class AgenticOrchestrator {
   /**
    * Executes a task using the Agentic workflow.
    * @param userPrompt The instruction from the user (e.g., "I bought milk")
+   * @param context The UI context functions (e.g., addItem)
    * @returns A final natural language response from the AI.
    */
-  static async executeTask(userPrompt: string): Promise<AgentResponse> {
+  static async executeTask(userPrompt: string, context?: ActionContext): Promise<AgentResponse> {
     AgentLogger.logEvent(`Starting task execution for prompt: "${userPrompt}"`);
     
     let apiKey: string;
@@ -36,7 +44,7 @@ export class AgenticOrchestrator {
     const messages = [
       {
         role: "system",
-        content: "You are a smart inventory assistant for the Icebox app. Your job is to help the user manage their food inventory. Use the tools provided to look up information or perform actions. If a user tells you they bought something, you should use the guess_item_properties tool to figure out how to store it, and then give them a helpful summary."
+        content: "You are a smart inventory assistant for the Icebox app. Your job is to help the user manage their food inventory. Use the tools provided to look up information or perform actions. If a user tells you they bought something, you should FIRST use the guess_item_properties tool to figure out how to store it, and THEN use the add_item_to_inventory tool to add it to their fridge. Finally, give them a helpful summary of what you did."
       },
       {
         role: "user",
@@ -88,6 +96,27 @@ export class AgenticOrchestrator {
           if (functionName === 'guess_item_properties') {
             const result = await guessItemProperties(functionArgs.itemName);
             functionResult = result || { error: "Could not guess properties" };
+          } else if (functionName === 'add_item_to_inventory') {
+            if (context && context.addItem) {
+              const now = new Date();
+              const expiryDate = addDays(now, functionArgs.shelfLifeDays || 7);
+              
+              const newItem: FoodItem = {
+                id: uuid.v4() as string,
+                name: functionArgs.name,
+                quantity: functionArgs.quantity || 1,
+                category: functionArgs.category || 'General',
+                location: functionArgs.location || 'Fridge',
+                expiryDate: expiryDate.toISOString(),
+                dateAdded: now.toISOString(),
+                scanned: false
+              };
+              
+              context.addItem(newItem);
+              functionResult = { success: true, message: `Added ${functionArgs.quantity}x ${functionArgs.name} to ${functionArgs.location}.` };
+            } else {
+              functionResult = { error: "UI Context 'addItem' not provided. Item was not added." };
+            }
           } else {
             functionResult = { error: "Unknown tool called" };
           }

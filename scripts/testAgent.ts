@@ -4,15 +4,15 @@ import 'dotenv/config';
 import { AgenticOrchestrator } from '../services/AgenticOrchestrator';
 
 // Ensure we have a .env variable or allow passing it inline
-// e.g., EXPO_PUBLIC_GROQ_API_KEY="gsk_..." npx tsx scripts/testAgent.ts
+// e.g., EXPO_PUBLIC_LLM_API_KEY="gsk_..." npx tsx scripts/testAgent.ts
 
 async function runTest() {
   console.log("=== Testing Agentic Orchestrator ===\n");
   
-  if (!process.env.EXPO_PUBLIC_GROQ_API_KEY) {
-    console.warn("⚠️  WARNING: EXPO_PUBLIC_GROQ_API_KEY is not set.");
+  if (!process.env.EXPO_PUBLIC_LLM_API_KEY) {
+    console.warn("⚠️  WARNING: EXPO_PUBLIC_LLM_API_KEY is not set.");
     console.warn("Please run the script with your API key like so:");
-    console.warn("EXPO_PUBLIC_GROQ_API_KEY=your_key npx tsx scripts/testAgent.ts");
+    console.warn("EXPO_PUBLIC_LLM_API_KEY=your_key npx tsx scripts/testAgent.ts");
     console.warn("\nFalling back to mock mode for demonstration...");
     
     // Simulate the orchestrator output if no key is provided
@@ -29,7 +29,19 @@ async function runTest() {
   const prompt = "I just bought some chicken breast, where do I put it?";
   console.log(`User Prompt: "${prompt}"\n`);
   
-  const response = await AgenticOrchestrator.executeTask(prompt);
+  // Mock the UI context so we can verify if the Agent calls addItem
+  const mockContext = {
+    addItem: (item: any) => {
+      console.log(`\n[Mock UI Context] 📥 SUCCESS! Agent requested to add item to fridge:`);
+      console.log(`   Name: ${item.name}`);
+      console.log(`   Category: ${item.category}`);
+      console.log(`   Location: ${item.location}`);
+      console.log(`   Quantity: ${item.quantity}`);
+      console.log(`   Expiry: ${new Date(item.expiryDate).toLocaleDateString()}`);
+    }
+  };
+
+  const response = await AgenticOrchestrator.executeTask(prompt, mockContext);
   
   console.log("\n=== Final Response ===");
   console.log("Success:", response.success);
