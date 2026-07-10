@@ -1,0 +1,5 @@
+.terraform/
+.opentofu/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
